@@ -1,0 +1,422 @@
+---
+title: "Assignment2- Markdown"
+author: "Ameya Karnad"
+date: "February 18, 2019"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message = FALSE,
+                      warning = FALSE)
+```
+
+
+
+```{r cars}
+library(tidyverse)
+library(data.table)
+library(DT)
+
+data <- fread(input = "D:/Columbia/Spring 2019/Data Science and Public Policy/Data Assignment 2/compas-analysis-master/compas-scores-two-years.csv")
+
+```
+
+## Including Plots
+
+
+```{r, echo=TRUE}
+ggplot(data[, .(count = .N), race], aes(x = reorder(race, count), y=count, fill= race)) +
+  geom_bar(stat = "identity") +
+  theme(axis.ticks = element_blank(),plot.title = element_text(size = rel(1.2)),
+        legend.position="none") +
+  labs( x = "",y = "Count",
+       title = "Data set Demographics - Race")
+
+```
+
+```{r, echo=TRUE}
+ggplot(data[, .(count = .N), sex], aes(x = reorder(sex, count), y=count, fill= sex)) +
+  geom_bar(stat = "identity") +
+  theme(axis.ticks = element_blank(),plot.title = element_text(size = rel(1.2)),
+        legend.position="none") +
+  labs( x = "",y = "Count",
+        title = "Data set Demographics - Gender")
+
+```
+
+```{r, echo=TRUE}
+
+data$age_cat <- ordered(data$age_cat, levels = c( "25 - 45", "Less than 25", "Greater than 45"))
+ggplot(data[, .(count = .N), age_cat], aes(x = age_cat, y=count, fill= age_cat)) +
+  geom_bar(stat = "identity") +
+  theme(axis.ticks = element_blank(),plot.title = element_text(size = rel(1.2)),
+        legend.position="none") +
+  labs( x = "",y = "Count",
+        title = "Data set Demographics - Age")
+
+
+```
+
+```{r}
+data[score_text == "LOW"][.N]
+```
+
+
+```{r , echo = TRUE}
+type = c('Correlation','Correlation', 'Coefficient', 'Coefficient')
+gender = c('Male','Female', 'Male','Female')
+value = c(-0.058, 0.058, 0.033, -0.033)
+
+gender_score <- data.frame( "Analysis Type" = type, "Gender" = gender, "Value" = value)
+
+ggplot(gender_score, aes(x = Analysis.Type, y = Value, fill = Gender)) + 
+  geom_bar(stat = "identity", position = "dodge") +
+  theme(axis.ticks = element_blank(),plot.title = element_text(size = rel(1.2))) +
+  labs(x = "Gender", y = "Score",
+  title = "Correlation vs Regresion Coffiecient ", 
+  subtitle = "Corelation is not Causation")
+
+```
+
+
+```{r , echo = TRUE}
+Race = c('Linear regression on Northpoint scoer')
+Score = c(5.86129229,  2.22553838,  3.4098577 ,  9.66977697)
+Race_coeff <- data.frame( "Race" = Race, "Score" = Score)
+
+ggplot(Race_coeff, aes(x = reorder(Race, desc(abs(Score))), y=Score, fill= Race)) +
+  geom_bar(stat = "identity") +
+  theme(axis.ticks = element_blank(),plot.title = element_text(size = rel(1.2)),
+        legend.position="none") +
+  labs( x = "Crime",y = "Coefficient",
+        title = "Coefficient for Criminal History")
+```
+
+
+# This is for  Medium High - 1 and Low = 0 
+
+## OVerall
+```{r , echo = TRUE}
+print("Overall")
+TP = data[is_recid == 1 & (score_text == "Medium" |score_text == "High"), .N]
+FN = data[is_recid == 1 & score_text == "Low", .N ]
+FP = data[is_recid == 0 & (score_text == "Medium" |score_text == "High"), .N]
+TN = data[is_recid == 0 & score_text == "Low", .N]
+names = c('Positive', 'Negative')
+P_value = c(TP,FN)
+N_value = c(FP,TN)
+data.frame( "Type" = names, "Positive" = P_value, "Negative" = N_value)
+print(sprintf("Accuracy = %.2f",round((TP+TN)/(TP+TN+FP+FN),2) ))
+print(sprintf("False Discovery Rate = %.2f",round((FP)/(TP+FP),2) ))
+print(sprintf("False Omission Rate = %.2f",round((FN)/(TN+FN),2) ))
+print(sprintf("False Positive Rate = %.2f",round((FP)/(TN+FP),2) ))
+```
+
+
+## African American
+
+```{r , echo = TRUE}
+print("Race = African American")
+aad =  data[race == "African-American"]
+
+TP = aad[is_recid == 1 & (score_text == "Medium" |score_text == "High"), .N]
+FN = aad[is_recid == 1 & score_text == "Low", .N ]
+FP = aad[is_recid == 0 & (score_text == "Medium" |score_text == "High"), .N]
+TN = aad[is_recid == 0 & score_text == "Low", .N]
+names = c('Positive', 'Negative')
+P_value = c(TP,FN)
+N_value = c(FP,TN)
+data.frame( "Type" = names, "Positive" = P_value, "Negative" = N_value)
+print(sprintf("Accuracy = %.2f",round((TP+TN)/(TP+TN+FP+FN),2) ))
+print(sprintf("False Discovery Rate = %.2f",round((FP)/(TP+FP),2) ))
+print(sprintf("False Omission Rate = %.2f",round((FN)/(TN+FN),2) ))
+print(sprintf("False Positive Rate = %.2f",round((FP)/(TN+FP),2) ))
+```
+
+
+## Caucasian
+```{r , echo = TRUE}
+print("Race = Caucasian")
+cad =  data[race == "Caucasian"]
+TP = cad[is_recid == 1 & (score_text == "Medium" |score_text == "High"), .N]
+FN = cad[is_recid == 1 & score_text == "Low", .N ]
+FP = cad[is_recid == 0 & (score_text == "Medium" |score_text == "High"), .N]
+TN = cad[is_recid == 0 & score_text == "Low", .N]
+names = c('Positive', 'Negative')
+P_value = c(TP,FN)
+N_value = c(FP,TN)
+data.frame( "Type" = names, "Positive" = P_value, "Negative" = N_value)
+print(sprintf("Accuracy = %.2f",round((TP+TN)/(TP+TN+FP+FN),2) ))
+print(sprintf("False Discovery Rate = %.2f",round((FP)/(TP+FP),2) ))
+print(sprintf("False Omission Rate = %.2f",round((FN)/(TN+FN),2) ))
+print(sprintf("False Positive Rate = %.2f",round((FP)/(TN+FP),2) ))
+```
+
+
+
+
+## AGE CATEGORY
+### Less than 25
+```{r , echo = TRUE}
+print("age_cat = Less than 25")
+low_age =  data[age_cat == "Less than 25"]
+TP = low_age[is_recid == 1 & (score_text == "Medium" |score_text == "High"), .N]
+FN = low_age[is_recid == 1 & score_text == "Low", .N ]
+FP = low_age[is_recid == 0 & (score_text == "Medium" |score_text == "High"), .N]
+TN = low_age[is_recid == 0 & score_text == "Low", .N]
+names = c('Positive', 'Negative')
+P_value = c(TP,FN)
+N_value = c(FP,TN)
+data.frame( "Type" = names, "Positive" = P_value, "Negative" = N_value)
+print(sprintf("Accuracy = %.2f",round((TP+TN)/(TP+TN+FP+FN),2) ))
+print(sprintf("False Discovery Rate = %.2f",round((FP)/(TP+FP),2) ))
+print(sprintf("False Omission Rate = %.2f",round((FN)/(TN+FN),2) ))
+print(sprintf("False Positive Rate = %.2f",round((FP)/(TN+FP),2) ))
+```
+
+
+### 25 - 45
+```{r , echo = TRUE}
+print("age_cat = 25 - 45")
+med_age =  data[age_cat == "25 - 45"]
+TP = med_age[is_recid == 1 & (score_text == "Medium" |score_text == "High"), .N]
+FN = med_age[is_recid == 1 & score_text == "Low", .N ]
+FP = med_age[is_recid == 0 & (score_text == "Medium" |score_text == "High"), .N]
+TN = med_age[is_recid == 0 & score_text == "Low", .N]
+names = c('Positive', 'Negative')
+P_value = c(TP,FN)
+N_value = c(FP,TN)
+data.frame( "Type" = names, "Positive" = P_value, "Negative" = N_value)
+print(sprintf("Accuracy = %.2f",round((TP+TN)/(TP+TN+FP+FN),2) ))
+print(sprintf("False Discovery Rate = %.2f",round((FP)/(TP+FP),2) ))
+print(sprintf("False Omission Rate = %.2f",round((FN)/(TN+FN),2) ))
+print(sprintf("False Positive Rate = %.2f",round((FP)/(TN+FP),2) ))
+```
+
+### Greater than 45
+
+```{r , echo = TRUE}
+print("age_cat = Greater than 45")
+high_age =  data[age_cat == "Greater than 45"]
+TP = high_age[is_recid == 1 & (score_text == "Medium" |score_text == "High"), .N]
+FN = high_age[is_recid == 1 & score_text == "Low", .N ]
+FP = high_age[is_recid == 0 & (score_text == "Medium" |score_text == "High"), .N]
+TN = high_age[is_recid == 0 & score_text == "Low", .N]
+names = c('Positive', 'Negative')
+P_value = c(TP,FN)
+N_value = c(FP,TN)
+data.frame( "Type" = names, "Positive" = P_value, "Negative" = N_value)
+print(sprintf("Accuracy = %.2f",round((TP+TN)/(TP+TN+FP+FN),2) ))
+print(sprintf("False Discovery Rate = %.2f",round((FP)/(TP+FP),2) ))
+print(sprintf("False Omission Rate = %.2f",round((FN)/(TN+FN),2) ))
+print(sprintf("False Positive Rate = %.2f",round((FP)/(TN+FP),2) ))
+```
+
+
+
+## Gender
+
+### MALE
+
+```{r , echo = TRUE}
+print("sex = Male")
+md =  data[sex == "Male"]
+TP = md[is_recid == 1 & (score_text == "Medium" |score_text == "High"), .N]
+FN = md[is_recid == 1 & score_text == "Low", .N ]
+FP = md[is_recid == 0 & (score_text == "Medium" |score_text == "High"), .N]
+TN = md[is_recid == 0 & score_text == "Low", .N]
+names = c('Positive', 'Negative')
+P_value = c(TP,FN)
+N_value = c(FP,TN)
+data.frame( "Type" = names, "Positive" = P_value, "Negative" = N_value)
+print(sprintf("Accuracy = %.2f",round((TP+TN)/(TP+TN+FP+FN),2) ))
+print(sprintf("False Discovery Rate = %.2f",round((FP)/(TP+FP),2) ))
+print(sprintf("False Omission Rate = %.2f",round((FN)/(TN+FN),2) ))
+print(sprintf("False Positive Rate = %.2f",round((FP)/(TN+FP),2) ))
+```
+
+
+###Female
+```{r , echo = TRUE}
+print("sex = Female")
+fd =  data[sex == "Female"]
+TP = fd[is_recid == 1 & (score_text == "Medium" |score_text == "High"), .N]
+FN = fd[is_recid == 1 & score_text == "Low", .N ]
+FP = fd[is_recid == 0 & (score_text == "Medium" |score_text == "High"), .N]
+TN = fd[is_recid == 0 & score_text == "Low", .N]
+names = c('Positive', 'Negative')
+P_value = c(TP,FN)
+N_value = c(FP,TN)
+data.frame( "Type" = names, "Positive" = P_value, "Negative" = N_value)
+print(sprintf("Accuracy = %.2f",round((TP+TN)/(TP+TN+FP+FN),2) ))
+print(sprintf("False Discovery Rate = %.2f",round((FP)/(TP+FP),2) ))
+print(sprintf("False Omission Rate = %.2f",round((FN)/(TN+FN),2) ))
+print(sprintf("False Positive Rate = %.2f",round((FP)/(TN+FP),2) ))
+```
+
+
+
+
+
+
+
+# This is for  High - 1 and Low, Medium  = 0
+
+
+## OVerall
+```{r , echo = TRUE}
+print("Overall")
+TP = data[is_recid == 1 & score_text == "High", .N]
+FN = data[is_recid == 1 & (score_text == "Medium" |score_text == "Low"), .N ]
+FP = data[is_recid == 0 & score_text == "High", .N]
+TN = data[is_recid == 0 & (score_text == "Medium" |score_text == "Low"), .N]
+names = c('Positive', 'Negative')
+P_value = c(TP,FN)
+N_value = c(FP,TN)
+data.frame( "Type" = names, "Positive" = P_value, "Negative" = N_value)
+print(sprintf("Accuracy = %.2f",round((TP+TN)/(TP+TN+FP+FN),2) ))
+print(sprintf("False Discovery Rate = %.2f",round((FP)/(TP+FP),2) ))
+print(sprintf("False Omission Rate = %.2f",round((FN)/(TN+FN),2) ))
+print(sprintf("False Positive Rate = %.2f",round((FP)/(TN+FP),2) ))
+```
+
+
+## African-American
+```{r , echo = TRUE}
+print("Race = African American")
+aad =  data[race == "African-American"]
+
+TP = aad[is_recid == 1 & score_text == "High", .N]
+FN = aad[is_recid == 1 & (score_text == "Medium" |score_text == "Low"), .N ]
+FP = aad[is_recid == 0 & score_text == "High", .N]
+TN = aad[is_recid == 0 & (score_text == "Medium" |score_text == "Low"), .N]
+names = c('Positive', 'Negative')
+P_value = c(TP,FN)
+N_value = c(FP,TN)
+data.frame( "Type" = names, "Positive" = P_value, "Negative" = N_value)
+print(sprintf("Accuracy = %.2f",round((TP+TN)/(TP+TN+FP+FN),2) ))
+print(sprintf("False Discovery Rate = %.2f",round((FP)/(TP+FP),2) ))
+print(sprintf("False Omission Rate = %.2f",round((FN)/(TN+FN),2) ))
+print(sprintf("False Positive Rate = %.2f",round((FP)/(TN+FP),2) ))
+```
+
+## Caucasian
+```{r , echo = TRUE}
+print("Race = Caucasian")
+cad =  data[race == "Caucasian"]
+TP = cad[is_recid == 1 & score_text == "High", .N]
+FN = cad[is_recid == 1 & (score_text == "Medium" |score_text == "Low"), .N ]
+FP = cad[is_recid == 0 & score_text == "High", .N]
+TN = cad[is_recid == 0 & (score_text == "Medium" |score_text == "Low"), .N]
+names = c('Positive', 'Negative')
+P_value = c(TP,FN)
+N_value = c(FP,TN)
+data.frame( "Type" = names, "Positive" = P_value, "Negative" = N_value)
+print(sprintf("Accuracy = %.2f",round((TP+TN)/(TP+TN+FP+FN),2) ))
+print(sprintf("False Discovery Rate = %.2f",round((FP)/(TP+FP),2) ))
+print(sprintf("False Omission Rate = %.2f",round((FN)/(TN+FN),2) ))
+print(sprintf("False Positive Rate = %.2f",round((FP)/(TN+FP),2) ))
+```
+
+
+
+## AGE
+
+### Less than 25
+```{r , echo = TRUE}
+print("age_cat = Less than 25")
+low_age =  data[age_cat == "Less than 25"]
+TP = low_age[is_recid == 1 & score_text == "High", .N]
+FN = low_age[is_recid == 1 & (score_text == "Medium" |score_text == "Low"), .N ]
+FP = low_age[is_recid == 0 & score_text == "High", .N]
+TN = low_age[is_recid == 0 & (score_text == "Medium" |score_text == "Low"), .N]
+names = c('Positive', 'Negative')
+P_value = c(TP,FN)
+N_value = c(FP,TN)
+data.frame( "Type" = names, "Positive" = P_value, "Negative" = N_value)
+print(sprintf("Accuracy = %.2f",round((TP+TN)/(TP+TN+FP+FN),2) ))
+print(sprintf("False Discovery Rate = %.2f",round((FP)/(TP+FP),2) ))
+print(sprintf("False Omission Rate = %.2f",round((FN)/(TN+FN),2) ))
+print(sprintf("False Positive Rate = %.2f",round((FP)/(TN+FP),2) ))
+```
+
+
+### 25 - 45
+```{r , echo = TRUE}
+print("age_cat = 25 - 45")
+mid_age =  data[age_cat == "25 - 45"]
+TP = mid_age[is_recid == 1 & score_text == "High", .N]
+FN = mid_age[is_recid == 1 & (score_text == "Medium" |score_text == "Low"), .N ]
+FP = mid_age[is_recid == 0 & score_text == "High", .N]
+TN = mid_age[is_recid == 0 & (score_text == "Medium" |score_text == "Low"), .N]
+names = c('Positive', 'Negative')
+P_value = c(TP,FN)
+N_value = c(FP,TN)
+data.frame( "Type" = names, "Positive" = P_value, "Negative" = N_value)
+print(sprintf("Accuracy = %.2f",round((TP+TN)/(TP+TN+FP+FN),2) ))
+print(sprintf("False Discovery Rate = %.2f",round((FP)/(TP+FP),2) ))
+print(sprintf("False Omission Rate = %.2f",round((FN)/(TN+FN),2) ))
+print(sprintf("False Positive Rate = %.2f",round((FP)/(TN+FP),2) ))
+```
+
+
+
+### Greater than 45
+```{r , echo = TRUE}
+print("age_cat = Greater than 45")
+high_age =  data[age_cat == "Greater than 45"]
+TP = high_age[is_recid == 1 & score_text == "High", .N]
+FN = high_age[is_recid == 1 & (score_text == "Medium" |score_text == "Low"), .N ]
+FP = high_age[is_recid == 0 & score_text == "High", .N]
+TN = high_age[is_recid == 0 & (score_text == "Medium" |score_text == "Low"), .N]
+names = c('Positive', 'Negative')
+P_value = c(TP,FN)
+N_value = c(FP,TN)
+data.frame( "Type" = names, "Positive" = P_value, "Negative" = N_value)
+print(sprintf("Accuracy = %.2f",round((TP+TN)/(TP+TN+FP+FN),2) ))
+print(sprintf("False Discovery Rate = %.2f",round((FP)/(TP+FP),2) ))
+print(sprintf("False Omission Rate = %.2f",round((FN)/(TN+FN),2) ))
+print(sprintf("False Positive Rate = %.2f",round((FP)/(TN+FP),2) ))
+```
+
+## Gender
+
+### MALE
+```{r , echo = TRUE}
+print("sex = Male")
+md =  data[sex == "Male"]
+TP = md[is_recid == 1 & score_text == "High", .N]
+FN = md[is_recid == 1 & (score_text == "Medium" |score_text == "Low"), .N ]
+FP = md[is_recid == 0 & score_text == "High", .N]
+TN = md[is_recid == 0 & (score_text == "Medium" |score_text == "Low"), .N]
+names = c('Positive', 'Negative')
+P_value = c(TP,FN)
+N_value = c(FP,TN)
+data.frame( "Type" = names, "Positive" = P_value, "Negative" = N_value)
+print(sprintf("Accuracy = %.2f",round((TP+TN)/(TP+TN+FP+FN),2) ))
+print(sprintf("False Discovery Rate = %.2f",round((FP)/(TP+FP),2) ))
+print(sprintf("False Omission Rate = %.2f",round((FN)/(TN+FN),2) ))
+print(sprintf("False Positive Rate = %.2f",round((FP)/(TN+FP),2) ))
+```
+
+### Female
+
+```{r , echo = TRUE}
+print("sex = Female")
+fd =  data[sex == "Female"]
+TP = fd[is_recid == 1 & score_text == "High", .N]
+FN = fd[is_recid == 1 & (score_text == "Medium" |score_text == "Low"), .N ]
+FP = fd[is_recid == 0 & score_text == "High", .N]
+TN = fd[is_recid == 0 & (score_text == "Medium" |score_text == "Low"), .N]
+names = c('Positive', 'Negative')
+P_value = c(TP,FN)
+N_value = c(FP,TN)
+data.frame( "Type" = names, "Positive" = P_value, "Negative" = N_value)
+print(sprintf("Accuracy = %.2f",round((TP+TN)/(TP+TN+FP+FN),2) ))
+print(sprintf("False Discovery Rate = %.2f",round((FP)/(TP+FP),2) ))
+print(sprintf("False Omission Rate = %.2f",round((FN)/(TN+FN),2) ))
+print(sprintf("False Positive Rate = %.2f",round((FP)/(TN+FP),2) ))
+```
+
+
+
