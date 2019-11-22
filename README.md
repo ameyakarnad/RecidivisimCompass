@@ -1,4 +1,4 @@
-## Recidivisim Compass
+# Recidivisim Compass
 
 - Mini Project on  Northpointe Inc's Compass system recidivism predictor
 	
